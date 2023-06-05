@@ -1,4 +1,5 @@
 #[derive(Debug, Eq, PartialEq)]
+/// The supported tokens in the Monkey programming language.
 pub(crate) enum TokenType {
     Assign,
     Plus,
@@ -18,17 +19,20 @@ pub(crate) enum TokenType {
 }
 
 #[derive(Debug)]
+/// Represents a distinct token in the language.
+/// The token is identified by its `TokenType` and its string form.
 pub(crate) struct Token {
     pub(crate) token_type: TokenType,
     pub(crate) token_literal: String,
 }
 
+#[cfg(test)]
 mod lexer_tests {
     use super::*;
     use crate::lamonz::lexer::*;
 
     #[test]
-    fn next_token_from_non_empty_valid_input() {
+    fn parse_symbols() {
         let input = "=+(){},;";
 
         let test_vec: Vec<Token> = vec![
@@ -64,6 +68,10 @@ mod lexer_tests {
                 token_type: TokenType::Semicolon,
                 token_literal: String::from(";"),
             },
+            Token {
+                token_type: TokenType::Eof,
+                token_literal: String::from(""),
+            }
         ];
 
         let mut lexer = Lexer::new(input);

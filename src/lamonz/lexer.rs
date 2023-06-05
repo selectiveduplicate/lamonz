@@ -1,82 +1,86 @@
 use std::{iter::Peekable, str::Chars};
-
 use crate::lamonz::token::*;
 
 #[derive(Debug)]
 pub(crate) struct Lexer<'a> {
-    input_iter: Peekable<Chars<'a>>, //position: usize,
-                                     //read_position: usize,
-                                     //ch: u8,
+    input_iter: Peekable<Chars<'a>>, 
 }
 
 impl<'a> Lexer<'a> {
+    /// Initializes a new lexer with the given input.
     pub(crate) fn new(input: &'a str) -> Self {
         Self {
             input_iter: input.chars().peekable(),
         }
     }
 
+    /// Advances the iterator on the input.
+    fn advance(&mut self) {
+        self.input_iter.next();
+    }
+
+    /// Produces the next token.
     pub(crate) fn next_token(&mut self) -> Option<Token> {
         self.skip_whitespace();
         match self.input_iter.peek() {
             Some('=') => {
-                self.input_iter.next();
+                self.advance();
                 Some(Token {
                     token_type: TokenType::Assign,
                     token_literal: "=".to_string(),
                 })
             }
             Some('+') => {
-                self.input_iter.next();
+                self.advance();
                 Some(Token {
                     token_type: TokenType::Plus,
                     token_literal: "+".to_string(),
                 })
             }
             Some('-') => {
-                self.input_iter.next();
+                self.advance();
                 Some(Token {
                     token_type: TokenType::Minus,
                     token_literal: "-".to_string(),
                 })
             }
             Some('(') => {
-                self.input_iter.next();
+                self.advance();
                 Some(Token {
                     token_type: TokenType::Lparen,
                     token_literal: "(".to_string(),
                 })
             }
             Some(')') => {
-                self.input_iter.next();
+                self.advance();
                 Some(Token {
                     token_type: TokenType::Rparen,
                     token_literal: ")".to_string(),
                 })
             }
             Some('{') => {
-                self.input_iter.next();
+                self.advance();
                 Some(Token {
                     token_type: TokenType::Lbrace,
                     token_literal: "{".to_string(),
                 })
             }
             Some('}') => {
-                self.input_iter.next();
+                self.advance();
                 Some(Token {
                     token_type: TokenType::Rbrace,
                     token_literal: "}".to_string(),
                 })
             }
             Some(';') => {
-                self.input_iter.next();
+                self.advance();
                 Some(Token {
                     token_type: TokenType::Semicolon,
                     token_literal: ";".to_string(),
                 })
             }
             Some(',') => {
-                self.input_iter.next();
+                self.advance();
                 Some(Token {
                     token_type: TokenType::Comma,
                     token_literal: ",".to_string(),
@@ -104,7 +108,6 @@ impl<'a> Lexer<'a> {
                 }
             }
             _ => {
-                dbg!(self.input_iter.peek());
                 Some(Token {
                 token_type: TokenType::Eof,
                 token_literal: "".to_string(),
@@ -116,36 +119,46 @@ impl<'a> Lexer<'a> {
     fn skip_whitespace(&mut self) {
         if let Some(next_ch) = self.input_iter.peek() {
             if next_ch.is_ascii_whitespace() {
-                self.input_iter.next();
+                self.advance();
             }
         }
     }
 
     /// Parses an identifier string from the input.
     fn parse_identifier(&mut self) -> String {
-        self.input_iter
-            .by_ref()
-            .take_while(|ch| ch.is_ascii_alphabetic())
-            .collect()
+        let mut ident = String::new();
+        while let Some(ch) = self.input_iter.peek() {
+            if ch.is_ascii_alphabetic() {
+                ident.push(*ch);
+                self.input_iter.next();
+            } else {
+                break;
+            }
+        }
+        ident
     }
 
-    /// Parses a number
+    /// Parses a number as a string from the input.
     fn parse_number(&mut self) -> String {
-        let number = self.input_iter
-            .by_ref()
-            .take_while(|ch| ch.is_ascii_digit())
-            .collect();
+        let mut number = String::new();
+        while let Some(ch) = self.input_iter.peek() {
+            if ch.is_ascii_digit() {
+                number.push(*ch);
+                self.input_iter.next();
+            } else {
+                break;
+            }
+        }
         number
     }
 
-    /// Looks up a keyword from an identifier string.
+    /// Checks if the identifier string is a keyword.
+    /// Returns the corresponding `TokenType` if it finds the keyword.
     fn lookup_identifier(ident: &str) -> Option<TokenType> {
-        if ident.eq("let") {
-            Some(TokenType::Let)
-        } else if ident.eq("fn") {
-            Some(TokenType::Function)
-        } else {
-            return None;
+        match ident {
+            "let" => Some(TokenType::Let),
+            "fn" => Some(TokenType::Function),
+            _ => None,
         }
     }
 }
